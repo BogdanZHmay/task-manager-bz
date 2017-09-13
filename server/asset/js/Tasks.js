@@ -59,7 +59,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             value: function sortTask(self) {
                 console.log('sorting tasks...', self);
 
-                self.response.forEach(function (self) {
+                var sortArr = self.response.slice(),
+                    obj = {};
+
+                sortArr.forEach(function (self) {
 
                     var day = new Date(self.date),
                         options = { month: 'short' };
@@ -67,10 +70,21 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                     self.ms = Date.now(self.date);
                     self.day = day.getDate();
                     self.month = day.toLocaleString('ru', options);
+
+                    sortArr.sort(function (prev, next) {
+                        if (prev.ms > next.ms) return 1;
+                        if (prev.ms < next.ms) return -1;
+                    });
+
+                    sortArr.forEach(function (self) {
+                        if (obj[self.date] === undefined) {
+                            obj[self.date] = sortArr.filter(function (res) {
+                                return res.date === self.date;
+                            });
+                        }
+                    });
                 });
-                // self.response.forEach(function (self){
-                //     self = `${self.date}`;
-                // })
+                console.log(obj);
             }
         }, {
             key: 'render',
