@@ -58,6 +58,19 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             key: 'sortTask',
             value: function sortTask(self) {
                 console.log('sorting tasks...', self);
+
+                self.response.forEach(function (self) {
+
+                    var day = new Date(self.date),
+                        options = { month: 'short' };
+
+                    self.ms = Date.now(self.date);
+                    self.day = day.getDate();
+                    self.month = day.toLocaleString('ru', options);
+                });
+                // self.response.forEach(function (self){
+                //     self = `${self.date}`;
+                // })
             }
         }, {
             key: 'render',
