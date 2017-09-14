@@ -10,6 +10,9 @@
             this.checkToken(self)
                 .then(this.getTasks)
                 .then(this.sortTask)
+                .then(this.render)
+                .then(this.addEvent)
+                .then(Tasks.hidePreloader)
                 .catch(this.logout);
         }
 
@@ -57,39 +60,72 @@
             let sortArr = self.response.slice(),
                 obj = {};
 
-            sortArr.forEach(function (self) {
+            sortArr.forEach(function (task) {
 
-                let day = new Date(self.date),
+                let day = new Date(task.date),
                     options = {month: 'short'};
 
-                self.ms = Date.now(self.date);
-                self.day = day.getDate();
-                self.month = day.toLocaleString('ru', options);
-
-                sortArr.sort(function(prev, next){
-                    if(prev.ms > next.ms) return 1;
-                    if(prev.ms < next.ms) return -1;
-                });
-
-
-                sortArr.forEach(function(self){
-                    if(obj[self.date] === undefined){
-                        obj[self.date] = sortArr.filter(function(res){
-                            return  res.date === self.date
-
-                        })
-
-                    }
-
-                });
+                task.ms = Date.parse(task.date);
+                task.day = day.getDate();
+                task.month = day.toLocaleString('ru', options);
 
             });
-            console.log(obj);
+
+            sortArr.sort((prev, next) => prev.ms - next.ms);
+
+            let undoneTasks = sortArr.filter(task => task.status === 'undone');
+            let doneTasks = sortArr.filter(task => task.status === 'done');
+
+            self.undoneTasks = Tasks.createObjFromArr(undoneTasks);
+            self.doneTasks = Tasks.createObjFromArr(doneTasks);
+
+            return self;
 
         }
 
         render(self){
-            console.log('Rendering tasks...');
+            console.log('Rendering tasks...', self);
+
+            return new Promise(function (resolve, reject) {
+                resolve(self);
+            })
+        }
+
+        addEvent(self){
+            console.log('Adding events...', self);
+
+            $('.task-header').on('click', Tasks.taskAccordion)
+
+        }
+
+        static hidePreloader(){
+
+            $('#loading').addClass('hide');
+        }
+
+        static createObjFromArr(arr){
+            let obj = {};
+
+            arr.forEach(function(task){
+                if(!obj[task.date]){
+                    obj[task.date] = arr.filter(el => el.date === task.date);
+                }
+            });
+
+            return obj;
+        }
+
+        static taskAccordion(e){
+
+            let parent = $(this).closest('.task');
+            let content = $(parent).find('.task-content-wrap');
+
+            if($(parent).hasClass('open')){
+                $(content).slideUp(500, () => $(parent).removeClass('open'));
+            } else{
+                $(content).slideDown(500, () => $(parent).addClass('open'));
+            }
+
         }
     }
 

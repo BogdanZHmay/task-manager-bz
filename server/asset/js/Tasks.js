@@ -15,7 +15,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             value: function init() {
                 var self = this;
 
-                this.checkToken(self).then(this.getTasks).then(this.sortTask).catch(this.logout);
+                this.checkToken(self).then(this.getTasks).then(this.sortTask).then(this.render).then(this.addEvent).then(Tasks.hidePreloader).catch(this.logout);
             }
         }, {
             key: 'checkToken',
@@ -62,34 +62,85 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                 var sortArr = self.response.slice(),
                     obj = {};
 
-                sortArr.forEach(function (self) {
+                sortArr.forEach(function (task) {
 
-                    var day = new Date(self.date),
+                    var day = new Date(task.date),
                         options = { month: 'short' };
 
-                    self.ms = Date.now(self.date);
-                    self.day = day.getDate();
-                    self.month = day.toLocaleString('ru', options);
-
-                    sortArr.sort(function (prev, next) {
-                        if (prev.ms > next.ms) return 1;
-                        if (prev.ms < next.ms) return -1;
-                    });
-
-                    sortArr.forEach(function (self) {
-                        if (obj[self.date] === undefined) {
-                            obj[self.date] = sortArr.filter(function (res) {
-                                return res.date === self.date;
-                            });
-                        }
-                    });
+                    task.ms = Date.parse(task.date);
+                    task.day = day.getDate();
+                    task.month = day.toLocaleString('ru', options);
                 });
-                console.log(obj);
+
+                sortArr.sort(function (prev, next) {
+                    return prev.ms - next.ms;
+                });
+
+                var undoneTasks = sortArr.filter(function (task) {
+                    return task.status === 'undone';
+                });
+                var doneTasks = sortArr.filter(function (task) {
+                    return task.status === 'done';
+                });
+
+                self.undoneTasks = Tasks.createObjFromArr(undoneTasks);
+                self.doneTasks = Tasks.createObjFromArr(doneTasks);
+
+                return self;
             }
         }, {
             key: 'render',
             value: function render(self) {
-                console.log('Rendering tasks...');
+                console.log('Rendering tasks...', self);
+
+                return new Promise(function (resolve, reject) {
+                    resolve(self);
+                });
+            }
+        }, {
+            key: 'addEvent',
+            value: function addEvent(self) {
+                console.log('Adding events...', self);
+
+                $('.task-header').on('click', Tasks.taskAccordion);
+            }
+        }], [{
+            key: 'hidePreloader',
+            value: function hidePreloader() {
+
+                $('#loading').addClass('hide');
+            }
+        }, {
+            key: 'createObjFromArr',
+            value: function createObjFromArr(arr) {
+                var obj = {};
+
+                arr.forEach(function (task) {
+                    if (!obj[task.date]) {
+                        obj[task.date] = arr.filter(function (el) {
+                            return el.date === task.date;
+                        });
+                    }
+                });
+
+                return obj;
+            }
+        }, {
+            key: 'taskAccordion',
+            value: function taskAccordion(e) {
+
+                var parent = $(this).closest('.task');
+                var content = $(parent).find('.task-content-wrap');
+
+                if ($(parent).hasClass('open')) {
+                    $(content).slideUp(500, function () {
+                        return $(parent).removeClass('open');
+                    });
+                } else {
+                    $(content).slideDown(500, function () {
+                        return $(parent).addClass('open');
+                    });
+                }
             }
         }]);
 
