@@ -163,8 +163,8 @@ a{
 		font-size: 1.8em;
 		font-family: 'SF-UI-Text-Semibold';
 		& > *{
-			&.active{
-				color: $generalColor;
+			&:not(.active){
+				color: #bdbdbd;
 			}
 			& + *{
 				&::before{
@@ -198,7 +198,7 @@ main{
 .all-task-wrap{
 	padding: 4em 0;
 	position: relative;
-	&::before{
+	&.timeline{
 		content: '';
 		display: inline-block;
 		border-left: 2px dashed $generalColor;

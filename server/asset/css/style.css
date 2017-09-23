@@ -361,8 +361,8 @@ a {
     color: #bdbdbd;
     font-size: 1.8em;
     font-family: 'SF-UI-Text-Semibold'; }
-    .toggle-class-tipe .toggle-task-list > *.active {
-      color: #00a1f1; }
+    .toggle-class-tipe .toggle-task-list > *:not(.active) {
+      color: #bdbdbd; }
     .toggle-class-tipe .toggle-task-list > * + *::before {
       content: '/';
       display: inline-block;
@@ -385,7 +385,7 @@ main {
 .all-task-wrap {
   padding: 4em 0;
   position: relative; }
-  .all-task-wrap::before {
+  .all-task-wrap.timeline {
     content: '';
     display: inline-block;
     border-left: 2px dashed #00a1f1;

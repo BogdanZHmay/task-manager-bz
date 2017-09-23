@@ -128,13 +128,18 @@
 
         changeColorTheme(){
             let li = $('.change-color li');
-            let blocks = $('[data-change-bg]');
+            let blocks = $('[data-change]');
+            let tabs_color =$('[data-change-color]');
             let color = localStorage.getItem('color') || '#00a1f1';
 
             function setColor(color) {
                 blocks.each(function (i, e) {
                     $(e).css("background-color", color);
                 });
+                tabs_color.each(function (i, e) {
+                    $(e).css("color", color);
+                })
+
             }
 
             li.each(function(i, e) {
@@ -194,13 +199,15 @@
 
             for( let day in obj){
                 marcup += `<div>
-                                <div class="task-day" data-change="background-color" data-change-bg>
+                                <div class="task-day" data-change="background-color">
                                     <span class="day">${obj[day][0].day}</span>
                                     <span class="month">${obj[day][0].month}</span>
                                 </div>
 
                                 <div class="all-task-wrap">
+                                    <div class="timeline" data-change="border-left-color"></div>
                                     ${Tasks.renderTasksByDay(obj[day])}
+                                    
                                 </div>
                             </div>`
             }
@@ -218,7 +225,7 @@
                 let taskStatus = task.status === 'done' ? 'success' : '';
 
                 tasksMarcup += `<div class="task ${taskStatus || taskWarning}">
-						<div class="to-do-time" data-change-bg>${task.time}</div>
+						<div class="to-do-time" data-change="background-color">${task.time}</div>
 						<div class="task-header flex-container">
 							<span class="icon icon-arrow"></span>
 							<span class="icon short-task-text">${task.taskText}</span>
