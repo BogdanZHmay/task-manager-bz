@@ -15,7 +15,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
             value: function init() {
                 var self = this;
 
-                this.checkToken(self).then(this.getTasks).then(this.sortTask).then(this.render).then(this.addEvent).then(Tasks.hidePreloader).then(this.addNewTask).then(this.changeColorTheme).catch(this.errorHandler);
+                this.checkToken(self).then(this.getTasks).then(this.sortTask).then(this.render).then(this.addEvent).then(Tasks.hidePreloader).then(this.changeColorTheme).then(this.addNewTask).catch(this.errorHandler);
             }
         }, {
             key: 'checkToken',
@@ -159,14 +159,20 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
                 setColor(color);
             }
+        }, {
+            key: 'addNewTask',
+            value: function addNewTask() {
+                var modal = $('.edit-task');
+                var taskBtn = $('.add-task');
+                var overlay = $('.overlay');
 
-            // addNewTask(task){
-            //     this.modal = $('.edit-task');
-            //     this.TaskBtn = $('.add-task');
-            //     this.overlay = $('.overlay');
-            //
-            // }
+                function openModal() {
+                    $([overlay, modal]).toggleClass('open');
+                }
 
+                taskBtn.on('click', openModal);
+                overlay.on('click', openModal);
+            }
         }], [{
             key: 'hidePreloader',
             value: function hidePreloader() {

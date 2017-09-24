@@ -13,8 +13,8 @@
                 .then(this.render)
                 .then(this.addEvent)
                 .then(Tasks.hidePreloader)
-                .then(this.addNewTask)
                 .then(this.changeColorTheme)
+                .then(this.addNewTask)
                 .catch(this.errorHandler);
         }
 
@@ -157,12 +157,19 @@
             setColor(color);
         }
 
-        // addNewTask(task){
-        //     this.modal = $('.edit-task');
-        //     this.TaskBtn = $('.add-task');
-        //     this.overlay = $('.overlay');
-        //
-        // }
+        addNewTask(){
+            let modal = $('.edit-task');
+            let taskBtn = $('.add-task');
+            let overlay = $('.overlay');
+
+            function openModal() {
+                $([overlay, modal]).toggleClass('open');
+            }
+
+            taskBtn.on('click', openModal);
+            overlay.on('click', openModal);
+
+        }
 
         static hidePreloader(){
 

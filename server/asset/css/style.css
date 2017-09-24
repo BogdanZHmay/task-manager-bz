@@ -385,10 +385,10 @@ main {
 .all-task-wrap {
   padding: 4em 0;
   position: relative; }
-  .all-task-wrap.timeline {
+  .all-task-wrap .timeline {
     content: '';
     display: inline-block;
-    border-left: 2px dashed #00a1f1;
+    border-left: 2px dashed #fff;
     position: absolute;
     top: 4em;
     left: 1.8em;
