@@ -1,6 +1,10 @@
 ;(function ($) {
     class Tasks{
         constructor(){
+            this.actionWithTask = '';
+            this.task = {
+                status: 'undone'
+            };
 
         }
 
@@ -9,7 +13,7 @@
 
             this.checkToken(self)
                 .then(this.getTasks)
-                .then(this.sortTask)
+                .then(this.sortTasks)
                 .then(this.render)
                 .then(this.addEvent)
                 .then(Tasks.hidePreloader)
@@ -29,7 +33,10 @@
                     document.cookie.slice(index, indexEnd);
 
                 if(index !== -1) resolve(self);
-                else reject('logout');
+                else {
+                    self.error = 'logout';
+                    reject(self)
+                }
             })
         }
 
@@ -56,7 +63,7 @@
             window.location = '/login';
         }
 
-        sortTask(self){
+        sortTasks(self){
             console.log('sorting tasks...', self);
 
             let sortArr = self.response.slice(),
@@ -114,15 +121,63 @@
         addEvent(self){
             console.log('Adding events...', self);
 
-            $('.task-header').on('click', Tasks.taskAccordion)
+            let addTaskBtn = $('.add-task');
+            let editTaskBtn = $('.icon-edit');
+            let overlay = $('.overlay');
+            let sendTask = $('.add-task-btn');
 
+            $('.task-header').on('click', Tasks.taskAccordion);
+
+            addTaskBtn.off('click');
+            editTaskBtn.off('click');
+            overlay.off('click');
+            sendTask.off('click');
+
+
+            addTaskBtn.on('click', function (e) {
+                self.actionWithTask = $(this).attr('data-action');
+                Tasks.openModal(e);
+            });
+            editTaskBtn.on('click', function (e) {
+                self.actionWithTask = $(this).attr('data-action');
+
+                let id = $(this).closest('.task').attr('data-task-id');
+                console.log(id);
+                let task = self.response.filter(oneTask => oneTask._id === id)[0];
+
+                self.task._id = id;
+
+                Tasks.addValueInModal(task);
+                Tasks.openModal(e);
+            });
+            overlay.on('click', function (e) {
+                self.actionWithTask = $(this).attr('data-action');
+                Tasks.openModal(e);
+            });
+
+            sendTask.on('click', function (e) {
+                e.preventDefault();
+
+                self.updateTaskObj(self)
+                    .then(function () {
+                        if(self.actionWithTask === 'add'){
+                            console.log(self.actionWithTask);
+                            self.addNewTask(self);
+                        }else {
+                            console.log(self.actionWithTask);
+                            self.editCurrentTask(self);
+                        }
+                    })
+
+                    .catch(self.errorHandler)
+            })
         }
 
-        errorHandler(type){
-            if(type === 'logout'){
-                this.logout();
+        errorHandler(self){
+            if(self.error === 'logout'){
+                self.logout();
             }else{
-                console.error('Error');
+                console.error('Error', self.error);
             }
         }
 
@@ -157,17 +212,75 @@
             setColor(color);
         }
 
-        addNewTask(){
-            let modal = $('.edit-task');
-            let taskBtn = $('.add-task');
-            let overlay = $('.overlay');
+        addNewTask(self){
+            // console.log(this.task);
+            $.ajax({
+                method: 'POST',
+                url: 'http://localhost:8080/add',
+                contentType: 'application/json',
+                data: JSON.stringify(this.task),
+                success: function(res){
+                    console.log('success', res);
+                    $('.overlay').trigger('click');
+                    self.getTasks(self)
+                        .then(self.sortTasks)
+                        .then(self.render)
+                        .then(self.addEvent)
+                },
+                error: function(error){
+                    console.error(error);
+                }
+            })
+        }
 
-            function openModal() {
-                $([overlay, modal]).toggleClass('open');
-            }
+        editCurrentTask(self){
+            $.ajax({
+                data: JSON.stringify(self.task),
+                type: 'PUT',
+                contentType: 'application/json',
+                url: `http://localhost:8080/edit/${self.task._id}`,
+                success: function(data){
+                    //какие-то действия при том если поменялось
+                    console.log('success edit');
+                    $('.overlay').trigger('click');
+                    self.getTasks(self)
+                        .then(self.sortTasks)
+                        .then(self.render)
+                        .then(self.addEvent)
 
-            taskBtn.on('click', openModal);
-            overlay.on('click', openModal);
+
+                },
+                error: function () {
+                    //какие-то действия при том если не поменялось
+                    console.log('error edit')
+
+                }
+
+            });
+        }
+
+        updateTaskObj(self){
+
+            return new Promise(function (resolve, reject) {
+
+                let date = $('.edit-task #task-date');
+                let time = $('.edit-task #task-time');
+                let taskText = $('.edit-task textarea');
+
+
+                if(!date.val() || !time.val() || !taskText.val()){
+                    self.error = 'empty input in modal';
+                    return reject(self);
+                }
+
+                self.task.date = date.val();
+                self.task.time = time.val();
+                self.task.taskText = taskText.val();
+
+                resolve();
+
+            });
+
 
         }
 
@@ -231,7 +344,7 @@
                 let taskWarning = date > task.ms ? 'warning' : '';
                 let taskStatus = task.status === 'done' ? 'success' : '';
 
-                tasksMarcup += `<div class="task ${taskStatus || taskWarning}">
+                tasksMarcup += `<div class="task ${taskStatus || taskWarning}" data-task-id="${task._id}">
 						<div class="to-do-time" data-change="background-color">${task.time}</div>
 						<div class="task-header flex-container">
 							<span class="icon icon-arrow"></span>
@@ -273,7 +386,7 @@
 								</div>
 							</div>
 							<div class="task-edit-row flex-container">
-								<span class="icon icon-edit"></span>
+								<span class="icon icon-edit" data-action="edit"></span>
 							</div>
 							
 						</div>
@@ -312,6 +425,28 @@
             container.append(alert);
         }
 
+        static openModal(e){
+
+            let editModal = $('.edit-task');
+            let overlay = $('.overlay');
+
+            $([editModal, overlay]).toggleClass('open');
+
+
+
+        }
+
+        static addValueInModal(task){
+
+            let date = $('.edit-task #task-date');
+            let time = $('.edit-task #task-time');
+            let taskText = $('.edit-task textarea');
+
+            date.val(task.date);
+            time.val(task.time);
+            taskText.val(task.taskText);
+
+        }
     }
 
     let tasks = new Tasks();
